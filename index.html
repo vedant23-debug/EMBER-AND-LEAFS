@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#17271f">
+<title>EMBER & LEAF — Specialty coffee and loose-leaf tea</title>
+<meta name="description" content="Small-batch coffee and loose-leaf tea with a subscription you can shape around your week. Front-end demo storefront.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="EMBER & LEAF — Specialty coffee and loose-leaf tea">
+<meta property="og:description" content="Choose your blends, pack sizes and delivery rhythm. Demo storefront.">
+<meta property="og:image" content="images/editorial/hero.jpg">
+<!-- REPLACE before publishing: set this to your real GitHub Pages URL, e.g. https://username.github.io/ember-leaf/ -->
+<link rel="canonical" href="https://vedant23-debug.github.io/HTML/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script type="application/ld+json" id="productJsonLd">{}</script>
+<!-- Supabase client library (plain HTML/CSS/JavaScript; no framework required) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+
+<!-- Order matters: products.js defines CATALOGUE, IMAGES and PLANS; app.js reads them -->
+<script src="products.js" defer></script>
+<script src="app.js" defer></script>
+<script src="subscriptions.js" defer></script>
+<script src="extras.js" defer></script>
+<!-- Loads the Supabase client after the library and existing site scripts -->
+<script src="supabase-client.js" defer></script>
+<script src="auth.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="announcement">Free shipping on bags over ₹999. This is a demo store: nothing is charged or shipped.</div>
+
+<header class="site-header" id="siteHeader">
+<a class="brand" href="#home" aria-label="Ember and Leaf, home">
+<span class="brand-mark" aria-hidden="true">E<span>&</span>L</span>
+<span class="brand-name">EMBER <i>&</i> LEAF<small>Coffee and tea</small></span>
+</a>
+<button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false" aria-controls="mainNav" aria-label="Open menu">☰</button>
+<nav class="main-nav" id="mainNav" aria-label="Main">
+<a href="#shop">Shop</a>
+<a href="#plans">Plans</a>
+<a href="#quiz">Find your blend</a>
+<a href="#subscription">Build a subscription</a>
+<a href="#dashboard">My subscriptions</a>
+<a href="#faq">FAQ</a>
+</nav>
+<div class="header-actions">
+<button class="icon-btn" id="themeToggle" type="button" aria-pressed="false" aria-label="Dark mode"><span aria-hidden="true">◐</span></button>
+<button class="icon-btn" id="openWishlist" type="button" aria-label="Open wishlist"><span aria-hidden="true">♡</span><b id="wishCount">0</b></button>
+<button class="cart-button" id="openCart" type="button" aria-label="Open shopping bag">Bag <span id="cartCount">0</span></button>
+</div>
+</header>
+
+<main id="main">
+<!-- Hero -->
+<section class="hero" id="home" aria-labelledby="heroTitle">
+<div class="hero-copy">
+<p class="eyebrow">Small batches, slow mornings</p>
+<h1 id="heroTitle">Coffee and tea for the part of your day that’s yours.</h1>
+<p class="hero-intro">Choose from our coffees and loose-leaf teas, then set a delivery rhythm that fits your week. Every price and tasting note is on the page before you decide.</p>
+<div class="hero-actions">
+<a class="button button-dark" href="#shop">Shop the collection</a>
+<a class="text-link" href="#subscription">Build a subscription</a>
+</div>
+</div>
+<figure class="hero-art">
+<img id="heroImage" data-image-key="hero" src="images/editorial/hero.jpg" alt="A cup of coffee beside whole beans on a wooden table" width="1400" height="1000" fetchpriority="high">
+<figcaption>Roasted and packed in small lots.</figcaption>
+</figure>
+</section>
+
+<ul class="trust-strip" aria-label="What to expect">
+<li><strong>Clear notes</strong><span>Origin, tasting notes and brew guide on every product</span></li>
+<li><strong>Your pack size</strong><span>Pick the size and quantity that suits your household</span></li>
+<li><strong>Your schedule</strong><span>Weekly or monthly, with skips and pauses</span></li>
+<li><strong>Honest demo</strong><span>No payment or shipment is simulated as real</span></li>
+</ul>
+
+<!-- Shop -->
+<section class="section" id="shop" aria-labelledby="shopTitle">
+<div class="section-heading">
+<div><p class="eyebrow">The collection</p><h2 id="shopTitle">Find your next favourite cup.</h2></div>
+<p>Search by name, origin or flavour, then narrow by style, caffeine and price. Ratings and stock labels are demo data.</p>
+</div>
+
+<form class="filter-panel" id="filterForm" role="search" aria-label="Filter products" novalidate>
+<div class="field-block grow">
+<label for="searchInput">Search</label>
+<input id="searchInput" type="search" placeholder="Try “cardamom”, “Assam” or “decaf”" autocomplete="off">
+</div>
+<div class="field-block">
+<label for="categoryFilter">Category</label>
+<select id="categoryFilter"><option value="">All categories</option></select>
+</div>
+<div class="field-block">
+<label for="styleFilter">Roast or tea style</label>
+<select id="styleFilter"><option value="">Any</option></select>
+</div>
+<div class="field-block">
+<label for="caffeineFilter">Caffeine</label>
+<select id="caffeineFilter">
+<option value="">Any</option><option value="none">None</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option>
+</select>
+</div>
+<div class="field-block narrow">
+<label for="minPrice">Min ₹</label>
+<input id="minPrice" type="number" inputmode="numeric" min="0" step="10" placeholder="0">
+</div>
+<div class="field-block narrow">
+<label for="maxPrice">Max ₹</label>
+<input id="maxPrice" type="number" inputmode="numeric" min="0" step="10" placeholder="Any">
+</div>
+<div class="field-block">
+<label for="sortProducts">Sort by</label>
+<select id="sortProducts">
+<option value="featured">Recommended</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="rating">Rating (demo)</option><option value="name">Name A–Z</option>
+</select>
+</div>
+</form>
+
+<div class="shop-controls">
+<div class="filter-tabs" role="group" aria-label="Product type">
+<button class="filter-tab active" type="button" data-filter="all" aria-pressed="true">All</button>
+<button class="filter-tab" type="button" data-filter="coffee" aria-pressed="false">Coffee</button>
+<button class="filter-tab" type="button" data-filter="tea" aria-pressed="false">Loose-leaf tea</button>
+</div>
+<p class="result-count" id="resultCount" role="status" aria-live="polite"></p>
+<button class="text-btn" id="clearFilters" type="button">Clear filters</button>
+</div>
+
+<div class="product-grid" id="productGrid"></div>
+<div class="empty-state" id="emptyState" hidden>
+<h3>Nothing matches those filters.</h3>
+<p>Try a broader search or clear a filter to see the full collection.</p>
+<button class="button button-dark" id="emptyClear" type="button">Clear filters</button>
+</div>
+</section>
+
+<!-- Story -->
+<section class="story-section" id="story" aria-labelledby="storyTitle">
+<img class="story-photo" data-image-key="story" src="images/editorial/story.jpg" alt="Freshly brewed coffee beside roasted beans" loading="lazy" width="1300" height="1000">
+<div class="story-copy">
+<p class="eyebrow">Our approach</p>
+<h2 id="storyTitle">Good ingredients, explained plainly.</h2>
+<p>We write down what you need to choose well: where a product is from, how it tastes, and how to brew it. Origins and product names here are proposed catalogue content for this demo, not sourcing claims.</p>
+<dl class="story-points">
+<div><dt>Know what’s in your cup</dt><dd>Tasting notes, flavour scores and a brew guide for every product.</dd></div>
+<div><dt>Make it yours</dt><dd>Choose blend, pack size, grind and delivery rhythm.</dd></div>
+</dl>
+</div>
+</section>
+
+<!-- Curated plans -->
+<section class="section plans-section" id="plans" aria-labelledby="plansTitle">
+<div class="section-heading">
+<div><p class="eyebrow">Curated plans A–J</p><h2 id="plansTitle">Start from a plan, then make it yours.</h2></div>
+<p>Each plan fills the subscription builder with real catalogue products. Plan prices are calculated from the same pack prices as the bag.</p>
+</div>
+<div class="plan-grid" id="plansGrid"></div>
+<h3 class="subhead" id="compareTitle">Compare plans</h3>
+<!-- NEW: interactive comparison (filled by subscriptions.js) -->
+<div class="compare-tool">
+<div class="filter-tabs" role="group" aria-label="Quick filters">
+<button class="filter-tab active" type="button" data-cf="all" aria-pressed="true">All plans</button>
+<button class="filter-tab" type="button" data-cf="coffee" aria-pressed="false">Coffee</button>
+<button class="filter-tab" type="button" data-cf="tea" aria-pressed="false">Tea</button>
+<button class="filter-tab" type="button" data-cf="mixed" aria-pressed="false">Mixed</button>
+<button class="filter-tab" type="button" data-cf="gift" aria-pressed="false">Gift-ready</button>
+<button class="filter-tab" type="button" data-cf="weekly" aria-pressed="false">Weekly</button>
+<button class="filter-tab" type="button" data-cf="under" aria-pressed="false">Under ₹1,000</button>
+</div>
+<div class="compare-chips" id="compareChips" role="group" aria-label="Choose up to 4 plans to compare"></div>
+<div class="compare-bar">
+<p id="compareHint" role="status" aria-live="polite"></p>
+<label class="check-row"><input type="checkbox" id="compareDiff"><span>Show differences only</span></label>
+</div>
+<div class="table-scroll" role="region" aria-labelledby="compareTitle" tabindex="0"><table class="compare-table compare-plans" id="planCompare"></table></div>
+</div>
+</section>
+
+<!-- Quiz -->
+<section class="section quiz-section" id="quiz" aria-labelledby="quizTitle">
+<div class="section-heading">
+<div><p class="eyebrow">Five questions</p><h2 id="quizTitle">Find your blend.</h2></div>
+<p>Answer five quick questions and we’ll suggest three products from the catalogue, with the reasons.</p>
+</div>
+<div class="quiz-card">
+<progress id="quizProgress" max="5" value="0" aria-label="Quiz progress"></progress>
+<p class="muted" id="quizStatus" aria-live="polite"></p>
+<form id="quizForm" novalidate>
+<fieldset id="quizFieldset"><legend id="quizLegend"></legend><div class="quiz-options" id="quizOptions"></div></fieldset>
+<div class="builder-actions">
+<button class="button button-outline" id="quizBack" type="button">Back</button>
+<button class="button button-dark" id="quizNext" type="submit">Next question</button>
+</div>
+</form>
+<div id="quizResults" hidden></div>
+</div>
+</section>
+
+<!-- Subscription builder -->
+<section class="section subscription-section" id="subscription" aria-labelledby="subTitle">
+<div class="section-heading">
+<div><p class="eyebrow">Subscription builder</p><h2 id="subTitle">Build your subscription.</h2></div>
+<p>Four steps: schedule, products, delivery details and review. Click any step to jump to it. Your progress is saved in this browser only.</p>
+</div>
+
+<div class="builder-layout">
+<div class="builder-card">
+<!-- NEW: clickable step tabs -->
+<ol class="steps" aria-label="Subscription steps">
+<li class="step active" data-step-indicator="1"><button type="button" class="step-btn" data-goto="1" aria-current="step"><b>1</b>Schedule</button></li>
+<li class="step" data-step-indicator="2"><button type="button" class="step-btn" data-goto="2"><b>2</b>Products</button></li>
+<li class="step" data-step-indicator="3"><button type="button" class="step-btn" data-goto="3"><b>3</b>Delivery</button></li>
+<li class="step" data-step-indicator="4"><button type="button" class="step-btn" data-goto="4"><b>4</b>Review</button></li>
+</ol>
+
+<form id="subscriptionForm" novalidate>
+<!-- Step 1 -->
+<section class="wizard-panel active" data-panel="1" aria-labelledby="step1Title">
+<h3 id="step1Title" tabindex="-1">When should we deliver?</h3>
+<div class="form-grid">
+<div class="field-block">
+<label for="frequency">Frequency</label>
+<select id="frequency"><option value="weekly">Weekly</option><option value="monthly" selected>Monthly</option></select>
+</div>
+<div class="field-block">
+<label for="duration">Term</label>
+<select id="duration">
+<option value="1">1 month</option><option value="3" selected>3 months</option><option value="6">6 months</option><option value="12">12 months</option><option value="18">18 months</option>
+</select>
+</div>
+<div class="field-block">
+<label for="startDate">First delivery date</label>
+<input id="startDate" type="date">
+<small class="field-error" id="startDateError" role="alert"></small>
+</div>
+<div class="field-block">
+<label for="deliveryDay">Preferred delivery day</label>
+<select id="deliveryDay">
+<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>
+</select>
+</div>
+<div class="field-block full-span">
+<label for="deliveryWindow">Preferred time window</label>
+<select id="deliveryWindow"><option value="morning">Morning (8 AM–12 PM)</option><option value="afternoon">Afternoon (12 PM–4 PM)</option><option value="evening">Evening (4 PM–8 PM)</option></select>
+<small class="field-help">Day and time are preferences. A real courier would confirm them.</small>
+</div>
+</div>
+<div class="choice-note" id="schedulePolicy"></div>
+<div class="schedule-preview" id="schedulePreview" aria-live="polite"></div>
+<button class="button button-dark full" type="button" data-next="2">Choose products</button>
+</section>
+
+<!-- Step 2 -->
+<section class="wizard-panel" data-panel="2" aria-labelledby="step2Title">
+<h3 id="step2Title" tabindex="-1">What would you like to brew?</h3>
+<p class="muted">Pick one or more products. Each has its own pack size, quantity and, for coffee, grind.</p>
+<div class="builder-tools">
+<div class="filter-tabs" role="group" aria-label="Show in builder">
+<button class="filter-tab active" type="button" data-builder-type="all" aria-pressed="true">Mixed</button>
+<button class="filter-tab" type="button" data-builder-type="coffee" aria-pressed="false">Coffee</button>
+<button class="filter-tab" type="button" data-builder-type="tea" aria-pressed="false">Tea</button>
+</div>
+<button class="text-btn" id="importCart" type="button">Add items from my bag</button>
+</div>
+<div class="blend-picker" id="blendPicker"></div>
+<small class="field-error" id="blendError" role="alert"></small>
+<div class="builder-actions">
+<button class="button button-outline" type="button" data-back="1">Back</button>
+<button class="button button-dark" type="button" data-next="3">Delivery details</button>
+</div>
+</section>
+
+<!-- Step 3 -->
+<section class="wizard-panel" data-panel="3" aria-labelledby="step3Title">
+<h3 id="step3Title" tabindex="-1">Where should it arrive?</h3>
+<p class="notice">This demo saves what you type in this browser only. It is not a secure account system, so please don’t enter anything you wouldn’t want stored locally.</p>
+<div class="form-grid">
+<div class="field-block">
+<label for="customerName">Full name</label>
+<input id="customerName" autocomplete="name" aria-describedby="customerNameError">
+<small class="field-error" id="customerNameError" role="alert"></small>
+</div>
+<div class="field-block">
+<label for="customerEmail">Email address</label>
+<input id="customerEmail" type="email" autocomplete="email" aria-describedby="customerEmailError">
+<small class="field-error" id="customerEmailError" role="alert"></small>
+</div>
+<div class="field-block full-span">
+<label for="customerPhone">Mobile number</label>
+<input id="customerPhone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="10" placeholder="10-digit mobile number" aria-describedby="customerPhoneError">
+<small class="field-error" id="customerPhoneError" role="alert"></small>
+</div>
+<div class="field-block full-span">
+<label for="addressLine">Address</label>
+<input id="addressLine" autocomplete="address-line1" placeholder="House or flat, street, area" aria-describedby="addressLineError">
+<small class="field-error" id="addressLineError" role="alert"></small>
+</div>
+<div class="field-block">
+<label for="city">City</label>
+<input id="city" autocomplete="address-level2" aria-describedby="cityError">
+<small class="field-error" id="cityError" role="alert"></small>
+</div>
+<div class="field-block">
+<label for="state">State</label>
+<select id="state" autocomplete="address-level1" aria-describedby="stateError"><option value="">Select a state</option></select>
+<small class="field-error" id="stateError" role="alert"></small>
+</div>
+<div class="field-block">
+<label for="pinCode">PIN code</label>
+<input id="pinCode" inputmode="numeric" autocomplete="postal-code" maxlength="6" placeholder="6 digits" aria-describedby="pinCodeError">
+<small class="field-error" id="pinCodeError" role="alert"></small>
+</div>
+<div class="field-block full-span">
+<label for="deliveryNotes">Delivery instructions <span class="optional">(optional)</span></label>
+<textarea id="deliveryNotes" rows="2" maxlength="200"></textarea>
+</div>
+</div>
+<label class="check-row"><input type="checkbox" id="isGift"><span>This subscription is a gift (simulated: no recipient is notified)</span></label>
+<div class="form-grid" id="giftFields" hidden>
+<div class="field-block">
+<label for="giftName">Recipient name</label>
+<input id="giftName" autocomplete="off" aria-describedby="giftNameError">
+<small class="field-error" id="giftNameError" role="alert"></small>
+</div>
+<div class="field-block full-span">
+<label for="giftMessage">Gift message <span class="optional">(optional)</span></label>
+<textarea id="giftMessage" rows="2" maxlength="200"></textarea>
+</div>
+</div>
+<div class="builder-actions">
+<button class="button button-outline" type="button" data-back="2">Back</button>
+<button class="button button-dark" type="button" data-next="4">Review plan</button>
+</div>
+</section>
+
+<!-- Step 4 -->
+<section class="wizard-panel" data-panel="4" aria-labelledby="step4Title">
+<h3 id="step4Title" tabindex="-1">Review your plan</h3>
+<div id="reviewPanel"></div>
+<label class="check-row"><input type="checkbox" id="termsCheck"><span>I understand this is a demo. No payment will be collected and no shipment will be booked.</span></label>
+<small class="field-error" id="termsError" role="alert"></small>
+<div class="builder-actions">
+<button class="button button-outline" type="button" data-back="3">Back</button>
+<button class="button button-dark" type="submit">Create demo subscription</button>
+</div>
+</section>
+</form>
+
+<!-- Success -->
+<section class="wizard-panel success-panel" id="successPanel" aria-labelledby="successTitle" hidden>
+<h3 id="successTitle" tabindex="-1">Your demo subscription is saved.</h3>
+<p class="notice strong">Demo only — no payment was collected and no shipment was booked.</p>
+<div id="successDetails"></div>
+<div class="builder-actions">
+<a class="button button-outline" href="#shop">Keep shopping</a>
+<a class="button button-dark" href="#dashboard" id="viewDashboard">View my subscriptions</a>
+</div>
+</section>
+</div>
+
+<aside class="summary-card" aria-label="Plan summary">
+<h3>Your plan so far</h3>
+<div class="summary-line"><span>Frequency</span><strong id="summaryFrequency">Monthly</strong></div>
+<div class="summary-line"><span>Term</span><strong id="summaryDuration">3 months</strong></div>
+<div class="summary-line"><span>Deliveries</span><strong id="summaryCount">3</strong></div>
+<div class="summary-line"><span>Products</span><strong id="summaryItems">0 items</strong></div>
+<div class="summary-line"><span>Subtotal per delivery</span><strong id="summarySubtotal">₹0</strong></div>
+<div class="summary-line"><span>Subscribe &amp; save 10%</span><strong id="summarySaving">−₹0</strong></div>
+<div class="summary-line"><span>Shipping per delivery</span><strong id="summaryShipping">₹0</strong></div>
+<div class="summary-line"><span>Total per delivery</span><strong id="summaryDelivery">₹0</strong></div>
+<div class="summary-total"><span>Total for the full term</span><strong id="summaryTotal">₹0</strong></div>
+<small class="summary-disclaimer">Estimate for this demo. Real pricing, taxes, stock and billing need a backend.</small>
+</aside>
+</div>
+</section>
+
+<!-- Dashboard -->
+<section class="section dashboard-section" id="dashboard" aria-labelledby="dashTitle">
+<div class="section-heading">
+<div><p class="eyebrow">Demo dashboard</p><h2 id="dashTitle">My subscriptions.</h2></div>
+<p>Pause, resume, skip, edit or cancel. Changes update this browser’s saved data only; no real system is notified.</p>
+</div>
+<div id="dashboardList" aria-live="polite"></div>
+<div class="empty-state" id="dashboardEmpty" hidden>
+<h3>No subscriptions yet.</h3>
+<p>Build one above and it will appear here.</p>
+<a class="button button-dark" href="#subscription">Build a subscription</a>
+</div>
+</section>
+
+<!-- Reviews -->
+<section class="section reviews-section" id="reviews" aria-labelledby="reviewsTitle">
+<div class="section-heading">
+<div><p class="eyebrow">Demo content</p><h2 id="reviewsTitle">What a good cup sounds like.</h2></div>
+<p>These are invented examples for the demo, not verified customer reviews.</p>
+</div>
+<div class="review-grid">
+<figure><blockquote>“The tasting notes made choosing easy. I knew what I was getting before I added it.”</blockquote><figcaption>Sample reviewer, demo content</figcaption></figure>
+<figure><blockquote>“Skipping a month took one click. That’s what I wanted from a subscription.”</blockquote><figcaption>Sample reviewer, demo content</figcaption></figure>
+<figure><blockquote>“Different pack sizes for coffee and tea in one plan was exactly right for us.”</blockquote><figcaption>Sample reviewer, demo content</figcaption></figure>
+</div>
+</section>
+
+<!-- FAQ -->
+<section class="section faq-section" id="faq" aria-labelledby="faqTitle">
+<div class="section-heading"><div><p class="eyebrow">Questions</p><h2 id="faqTitle">Good to know.</h2></div></div>
+<div class="faq-list">
+<details><summary>How often can I get deliveries?</summary><p>Weekly or monthly, for a term of 1, 3, 6, 12 or 18 months. A weekly plan creates one delivery every seven days, so a one-month weekly plan has four or five deliveries depending on your start date.</p></details>
+<details><summary>Can I skip a delivery?</summary><p>Yes. In the dashboard, skip the next delivery and the rest of your schedule stays as it was.</p></details>
+<details><summary>Can I pause and resume?</summary><p>Yes. Pausing holds your schedule. When you resume, remaining dates are recalculated from the next available date using the same rules as the builder.</p></details>
+<details><summary>How do I cancel?</summary><p>Cancel from the dashboard after a confirmation step. In this demo, cancelling only updates your saved data.</p></details>
+<details><summary>When is shipping free?</summary><p>Orders with a subtotal of ₹999 or more, measured after any coupon discount, ship free. Otherwise a flat demo shipping fee applies.</p></details>
+<details><summary>How fresh is the coffee?</summary><p>This demo doesn’t make freshness claims. A real store would show roast dates on every bag.</p></details>
+<details><summary>What grind options are there?</summary><p>Whole bean, espresso, moka pot, filter and French press. Grind is separate from roast level, which describes how dark the beans are.</p></details>
+<details><summary>How should I brew loose-leaf tea?</summary><p>Each tea has its own brew guide on its product page, with water temperature and steeping time.</p></details>
+<details><summary>Can I send a gift subscription?</summary><p>Yes, in step 3. Gift delivery and recipient messages are simulated in this demo.</p></details>
+<details><summary>What are the demo’s limits?</summary><p>No payment, courier, email or real account exists. Data is saved in this browser and can be cleared at any time.</p></details>
+</div>
+</section>
+
+<!-- Newsletter -->
+<section class="newsletter-section" aria-labelledby="newsTitle">
+<div><p class="eyebrow">Notes from the brew room</p><h2 id="newsTitle">A little inspiration for your inbox.</h2></div>
+<form id="newsletterForm" class="newsletter-form" novalidate>
+<label class="sr-only" for="newsletterEmail">Email address</label>
+<input id="newsletterEmail" type="email" placeholder="Your email address" aria-describedby="newsletterError">
+<button class="button button-light" type="submit">Sign me up</button>
+<small class="field-error" id="newsletterError" role="alert"></small>
+<small>Demo only. No email is stored or sent.</small>
+</form>
+</section>
+</main>
+
+<footer class="site-footer">
+<a class="brand footer-brand" href="#home" aria-label="Ember and Leaf, back to top">
+<span class="brand-mark" aria-hidden="true">E<span>&</span>L</span>
+<span class="brand-name">EMBER <i>&</i> LEAF<small>Coffee and tea</small></span>
+</a>
+<p>Thoughtfully chosen. Slowly brewed.</p>
+<nav class="footer-links" aria-label="Footer">
+<a href="#shop">Shop</a><a href="#plans">Plans</a><a href="#subscription">Subscriptions</a><a href="#faq">FAQ</a>
+<button class="text-btn" id="openAdmin" type="button">Demo admin</button>
+</nav>
+<small>© <span id="currentYear"></span> Ember &amp; Leaf. Demo storefront: not a live checkout.</small>
+</footer>
+
+<!-- Shopping bag drawer (native dialog: focus trap, Escape and focus return built in) -->
+<dialog class="drawer" id="cartDrawer" aria-labelledby="cartTitle">
+<div class="drawer-heading">
+<h2 id="cartTitle">Your bag <span id="drawerCount">(0)</span></h2>
+<button class="icon-button" id="closeCart" type="button" aria-label="Close shopping bag">×</button>
+</div>
+<div class="ship-progress">
+<p id="shipMessage"></p>
+<progress id="shipBar" max="999" value="0" aria-labelledby="shipMessage"></progress>
+</div>
+<div id="cartItems" class="cart-items"></div>
+<div class="cart-footer">
+<form id="couponForm" class="coupon-form" novalidate>
+<label class="sr-only" for="couponInput">Coupon code</label>
+<input id="couponInput" placeholder="Coupon code" autocomplete="off" maxlength="20">
+<button class="button button-outline" type="submit">Apply</button>
+</form>
+<p class="coupon-help">Demo codes: <b>EMBER10</b> (10% off), <b>WELCOME100</b> (₹100 off orders of ₹799+), <b>FREESHIP</b> (free shipping).</p>
+<p class="coupon-message" id="couponMessage" role="status"></p>
+<div class="cart-total"><span>Subtotal</span><strong id="cartSubtotal">₹0</strong></div>
+<div class="cart-total" id="discountRow" hidden><span id="discountLabel">Discount</span><strong id="cartDiscount">−₹0</strong></div>
+<div class="cart-total"><span>Shipping</span><strong id="cartShipping">₹0</strong></div>
+<div class="cart-total grand"><span>Total</span><strong id="cartTotal">₹0</strong></div>
+<small>Demo checkout: nothing is charged. Shipping is judged on the subtotal after discount.</small>
+<button class="button button-dark full" id="cartCheckout" type="button">Move bag to subscription builder</button>
+<button class="button button-outline full" id="continueShopping" type="button">Continue shopping</button>
+</div>
+</dialog>
+
+<!-- Wishlist -->
+<dialog class="drawer" id="wishlistDialog" aria-labelledby="wishTitle">
+<div class="drawer-heading">
+<h2 id="wishTitle">Wishlist</h2>
+<button class="icon-button" id="closeWishlist" type="button" aria-label="Close wishlist">×</button>
+</div>
+<div id="wishlistItems" class="cart-items"></div>
+</dialog>
+
+<!-- Product detail -->
+<dialog class="modal product-modal" id="productDialog" aria-labelledby="pdTitle">
+<button class="icon-button modal-close" id="closeProduct" type="button" aria-label="Close product details">×</button>
+<div id="productDetail"></div>
+</dialog>
+
+<!-- Generic confirmation -->
+<dialog class="modal small-modal" id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+<h2 id="confirmTitle"></h2>
+<p id="confirmText"></p>
+<div class="builder-actions">
+<button class="button button-outline" id="confirmCancel" type="button">Keep as is</button>
+<button class="button button-outline" id="confirmAlt" type="button" hidden></button>
+<button class="button button-dark" id="confirmOk" type="button">Confirm</button>
+</div>
+</dialog>
+
+<!-- Demo admin -->
+<dialog class="modal admin-modal" id="adminDialog" aria-labelledby="adminTitle">
+<button class="icon-button modal-close" id="closeAdmin" type="button" aria-label="Close admin">×</button>
+<h2 id="adminTitle">Demo admin</h2>
+<p class="notice">Front-end demo only. The PIN below is a convenience, not security: anyone who can open this page can read it in the source.</p>
+<form id="adminPinForm" class="coupon-form" novalidate>
+<label class="sr-only" for="adminPin">Demo PIN</label>
+<input id="adminPin" type="password" inputmode="numeric" autocomplete="off" placeholder="Demo PIN">
+<button class="button button-dark" type="submit">Unlock</button>
+</form>
+<p class="coupon-message" id="adminPinMessage" role="alert"></p>
+<div id="adminPanel" hidden>
+<div class="admin-metrics" id="adminMetrics"></div>
+<div class="filter-panel">
+<div class="field-block grow"><label for="adminSearch">Search subscriptions</label><input id="adminSearch" type="search"></div>
+<div class="field-block"><label for="adminStatus">Status</label>
+<select id="adminStatus"><option value="">All</option><option value="active">Active</option><option value="paused">Paused</option><option value="cancelled">Cancelled</option></select>
+</div>
+</div>
+<div class="table-scroll" role="region" aria-label="Subscriptions" tabindex="0"><table class="compare-table" id="adminSubs"></table></div>
+<h3 class="subhead">Products</h3>
+<div class="table-scroll" role="region" aria-label="Product settings" tabindex="0"><table class="compare-table" id="adminProducts"></table></div>
+<div class="builder-actions">
+<button class="button button-outline" id="adminReset" type="button">Reset demo data</button>
+<button class="button button-dark" id="adminSave" type="button">Save changes</button>
+</div>
+</div>
+</dialog>
+
+<div class="toast-region" id="toastRegion" role="status" aria-live="polite"></div>
+</body>
+</html>
