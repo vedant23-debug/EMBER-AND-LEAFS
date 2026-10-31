@@ -449,7 +449,7 @@
     setTimeout(() => t.remove(), 3400);
   }
 
-  /* Any image that fails to load swaps to the local placeholder without breaking layout. */
+  /* Any image that fails to load swaps to the local placeholder without breaking layout. 
   document.addEventListener("error", e => {
     const img = e.target;
     if (!(img instanceof HTMLImageElement)) return;
@@ -460,7 +460,7 @@
     img.classList.add("is-fallback");
     img.alt = img.alt ? `${img.alt} (photo coming soon)` : "";
     img.src = EL.IMAGES.placeholder;
-  }, true);
+  }, true);*/
 
   function writeJsonLd() {
     const items = products().slice(0, 12).map(p => ({
