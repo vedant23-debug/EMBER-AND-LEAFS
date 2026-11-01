@@ -2,7 +2,8 @@
    Sections: 6 Subscription scheduling · 7 Subscription builder · 8 Curated plans.
    Loads after app.js and uses window.ELApp. Exposes window.ELSub for the dashboard/admin code.
    DEMO ONLY: nothing here charges money, books a courier or sends email.
-   UPDATED: clickable step tabs (goToStep), no auto-scroll on first load, interactive plan comparison. */
+   UPDATED: clickable step tabs (goToStep), no auto-scroll on first load, interactive plan comparison.
+   UPDATED: "Preferred delivery day" removed; the schedule preview uses only start date, frequency and term. */
 "use strict";
 (function () {
   const A = window.ELApp, EL = window.EL;
@@ -16,7 +17,7 @@
        start day and shortened to the month's last day when needed (31 Jan → 28/29 Feb → 31 Mar).
      - The term ends on start date + N months. Only deliveries strictly BEFORE that end date count,
        so 1 month of weekly deliveries is 4 or 5 deliveries depending on the start date.
-     - Day and time window are preferences only; no courier appointment is implied. */
+     - The time window is a preference only; no courier appointment is implied. */
   const pad = n => String(n).padStart(2, "0");
   const toISO = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   function parseISO(s) {
@@ -61,7 +62,7 @@
 
   /* ===== 7. SUBSCRIPTION BUILDER ===== */
   const STATES = ["Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"];
-  const FIELD_IDS = ["frequency", "duration", "startDate", "deliveryDay", "deliveryWindow", "customerName", "customerEmail", "customerPhone", "addressLine", "city", "state", "pinCode", "deliveryNotes", "isGift", "giftName", "giftMessage"];
+  const FIELD_IDS = ["frequency", "duration", "startDate", "deliveryWindow", "customerName", "customerEmail", "customerPhone", "addressLine", "city", "state", "pinCode", "deliveryNotes", "isGift", "giftName", "giftMessage"];
   const RULES = {
     customerName: [v => v.trim().length >= 2, "Enter your full name."],
     customerEmail: [v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()), "Enter a valid email, like name@example.com."],
@@ -100,7 +101,7 @@
     const min = addDays(today(), 1), bad = !start || start < min;
     $("#startDate").setAttribute("aria-invalid", String(bad));
     err.textContent = bad ? `Choose a first delivery date from ${fmt(toISO(min))} onwards.` : "";
-    $("#schedulePolicy").textContent = "How dates are counted: your first delivery is on the start date. Weekly repeats every 7 days; monthly repeats on the same day each month (shortened to the last day of shorter months). Only dates before the term end (start date plus the term) are included. Day and time are preferences, not courier appointments.";
+    $("#schedulePolicy").textContent = "How dates are counted: your first delivery is on the start date. Weekly repeats every 7 days; monthly repeats on the same day each month (shortened to the last day of shorter months). Only dates before the term end (start date plus the term) are included. The time window is a preference, not a courier appointment.";
     const shown = dates.slice(0, 12);
     $("#schedulePreview").replaceChildren(
       h("strong", { text: bad ? "No schedule yet." : `${dates.length} deliveries, ${fmt(dates[0])} to ${fmt(dates[dates.length - 1])}` }),
@@ -200,7 +201,7 @@
       row("Products", items.map(i => h("div", { text: `${i.name} × ${i.qty} (${i.pack}${i.grind ? `, ${i.grind}` : ""}) · ${money(i.unitPrice * i.qty)}` }))),
       row("Frequency and term", `${$("#frequency").value === "weekly" ? "Weekly" : "Monthly"} for ${term()} ${term() === 1 ? "month" : "months"}`),
       row("Deliveries", `${dates.length}, from ${fmt(dates[0])} to ${fmt(dates[dates.length - 1])}`),
-      row("Preference", `${$("#deliveryDay").value}, ${$("#deliveryWindow").selectedOptions[0].textContent} (a preference, not an appointment)`),
+      row("Preference", `${$("#deliveryWindow").selectedOptions[0].textContent} (a preference, not an appointment)`),
       row("Deliver to", `${v("customerName")}, ${v("addressLine")}, ${v("city")}, ${v("state")} ${v("pinCode")}`),
       $("#isGift").checked && row("Gift for", `${v("giftName")}${v("giftMessage") ? ` — “${v("giftMessage")}”` : ""} (simulated, nobody is notified)`),
       row("Subtotal per delivery", money(p.subtotal)),
@@ -224,7 +225,7 @@
     const v = id => fieldEl(id).value.trim();
     const sub = {
       id: newId(), status: "active", createdAt: toISO(today()), frequency: $("#frequency").value, term: term(), startDate: $("#startDate").value,
-      deliveryDay: $("#deliveryDay").value, deliveryWindow: $("#deliveryWindow").selectedOptions[0].textContent,
+      deliveryWindow: $("#deliveryWindow").selectedOptions[0].textContent,
       items: items.map(({ productId, name, pack, qty, grind, unitPrice }) => ({ productId, name, pack, qty, grind, unitPrice })),
       customer: { name: v("customerName"), email: v("customerEmail"), phone: v("customerPhone"), address: v("addressLine"), city: v("city"), state: v("state"), pin: v("pinCode"), notes: v("deliveryNotes") },
       gift: { isGift: $("#isGift").checked, name: v("giftName"), message: v("giftMessage") },
@@ -275,7 +276,7 @@
     $("#frequency").value = "monthly"; $("#duration").value = "3";
   }
 
-  /* NEW: click any step tab to jump to it. Going back is always allowed and never validates.
+  /* Click any step tab to jump to it. Going back is always allowed and never validates.
      Going forward checks every step on the way and stops at the first one that needs fixing. */
   function goToStep(target) {
     if (target <= B.step) return showStep(target);
@@ -294,7 +295,7 @@
     $$("[data-next]").forEach(b => b.addEventListener("click", () => { if (validateStep(B.step)) showStep(Number(b.dataset.next)); }));
     $$("[data-back]").forEach(b => b.addEventListener("click", () => showStep(Number(b.dataset.back)))); // going back never validates or discards progress
     $$("[data-goto]").forEach(b => b.addEventListener("click", () => goToStep(Number(b.dataset.goto))));
-    ["frequency", "duration", "startDate", "deliveryDay", "deliveryWindow"].forEach(id => fieldEl(id).addEventListener("change", () => { renderSchedule(); saveDraft(); }));
+    ["frequency", "duration", "startDate", "deliveryWindow"].forEach(id => fieldEl(id).addEventListener("change", () => { renderSchedule(); saveDraft(); }));
     $("#subscriptionForm").addEventListener("input", e => { if (e.target.id && e.target.getAttribute("aria-invalid") === "true") e.target.setAttribute("aria-invalid", "false"); saveDraft(); updateSummary(); });
     $("#isGift").addEventListener("change", e => { $("#giftFields").hidden = !e.target.checked; });
     $("#blendPicker").addEventListener("change", onPickerChange);
@@ -313,7 +314,7 @@
   /* ===== 8. CURATED PLANS ===== */
   const cadence = p => `${cap(p.frequency)} · ${p.durations.join(", ")} months`;
 
-  /* NEW: plan price from the live catalogue (includes admin price edits), same 10% saving as the builder. */
+  /* Plan price from the live catalogue (includes admin price edits), same 10% saving as the builder. */
   const planCost = pl => Math.round(pl.items.reduce((s, i) => s + (EL.priceFor(productById(i.productId, true), i.pack) || 0) * i.quantity, 0) * (1 - EL.SUBSCRIBE_DISCOUNT));
   const CF = { all: () => true, coffee: p => p.type === "coffee", tea: p => p.type === "tea", mixed: p => p.type === "mixed", gift: p => p.gift, weekly: p => p.frequency === "weekly", under: p => planCost(p) < 1000 };
   const C = { filter: "all", picked: ["plan-a", "plan-d", "plan-f"], diff: false };
@@ -395,7 +396,7 @@
 
   A.register(() => {
     renderPlans(); initBuilder(); on("catalogue-changed", renderPlans);
-    // NEW: plan comparison controls (quick filters and "differences only")
+    // Plan comparison controls (quick filters and "differences only")
     $$("[data-cf]").forEach(b => b.addEventListener("click", () => {
       C.filter = b.dataset.cf; C.picked = [];
       $$("[data-cf]").forEach(x => { const a = x === b; x.classList.toggle("active", a); x.setAttribute("aria-pressed", String(a)); });
