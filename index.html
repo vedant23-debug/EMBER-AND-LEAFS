@@ -162,7 +162,7 @@
 </div>
 <div class="plan-grid" id="plansGrid"></div>
 <h3 class="subhead" id="compareTitle">Compare plans</h3>
-<!-- NEW: interactive comparison (filled by subscriptions.js) -->
+<!-- Interactive comparison (filled by subscriptions.js) -->
 <div class="compare-tool">
 <div class="filter-tabs" role="group" aria-label="Quick filters">
 <button class="filter-tab active" type="button" data-cf="all" aria-pressed="true">All plans</button>
@@ -211,7 +211,7 @@
 
 <div class="builder-layout">
 <div class="builder-card">
-<!-- NEW: clickable step tabs -->
+<!-- Clickable step tabs -->
 <ol class="steps" aria-label="Subscription steps">
 <li class="step active" data-step-indicator="1"><button type="button" class="step-btn" data-goto="1" aria-current="step"><b>1</b>Schedule</button></li>
 <li class="step" data-step-indicator="2"><button type="button" class="step-btn" data-goto="2"><b>2</b>Products</button></li>
@@ -234,21 +234,15 @@
 <option value="1">1 month</option><option value="3" selected>3 months</option><option value="6">6 months</option><option value="12">12 months</option><option value="18">18 months</option>
 </select>
 </div>
-<div class="field-block">
+<div class="field-block full-span">
 <label for="startDate">First delivery date</label>
 <input id="startDate" type="date">
 <small class="field-error" id="startDateError" role="alert"></small>
 </div>
-<div class="field-block">
-<label for="deliveryDay">Preferred delivery day</label>
-<select id="deliveryDay">
-<option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option>
-</select>
-</div>
 <div class="field-block full-span">
 <label for="deliveryWindow">Preferred time window</label>
 <select id="deliveryWindow"><option value="morning">Morning (8 AM–12 PM)</option><option value="afternoon">Afternoon (12 PM–4 PM)</option><option value="evening">Evening (4 PM–8 PM)</option></select>
-<small class="field-help">Day and time are preferences. A real courier would confirm them.</small>
+<small class="field-help">The time window is a preference. A real courier would confirm it.</small>
 </div>
 </div>
 <div class="choice-note" id="schedulePolicy"></div>
