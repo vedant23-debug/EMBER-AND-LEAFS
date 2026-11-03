@@ -17,17 +17,14 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <script type="application/ld+json" id="productJsonLd">{}</script>
-<!-- Supabase client library (plain HTML/CSS/JavaScript; no framework required) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 
 <!-- Order matters: products.js defines CATALOGUE, IMAGES and PLANS; app.js reads them -->
 <script src="products.js" defer></script>
 <script src="app.js" defer></script>
 <script src="subscriptions.js" defer></script>
 <script src="extras.js" defer></script>
-<!-- Loads the Supabase client after the library and existing site scripts -->
-<script src="supabase-client.js" defer></script>
-<script src="auth.js" defer></script>
+<script src="payments.js" defer></script>
+<script src="supabase.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
