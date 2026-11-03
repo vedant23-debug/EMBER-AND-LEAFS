@@ -531,3 +531,27 @@ dialog.product-modal .related-grid img { display: block; width: 100%; height: au
     max-height: 88dvh;
   }
 }
+
+/* ===== PAYMENT OPTIONS (step 4) ===== */
+.pay-fieldset { border: 0; padding: 0; margin: 22px 0 8px; min-width: 0; }
+.pay-fieldset legend { font-family: var(--serif); font-size: 1.15rem; color: var(--head); padding: 0; margin-bottom: 12px; }
+.pay-options { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 16px; }
+.pay-option { display: flex; gap: 12px; align-items: flex-start; padding: 14px; background: var(--card); border: 1px solid var(--field-line); cursor: pointer; }
+.pay-option input { margin-top: 4px; accent-color: var(--primary); }
+.pay-option span { display: flex; flex-direction: column; gap: 2px; }
+.pay-option small { color: var(--muted); font-size: .75rem; }
+.pay-option.selected { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold) inset; background: var(--cream); }
+.pay-option:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.pay-detail { background: var(--cream); padding: 16px; margin-bottom: 14px; }
+.pay-detail[hidden] { display: none; }
+.pay-lead { margin: 0 0 10px; font-weight: 600; color: var(--head); }
+.pay-info { margin: 0 0 10px; padding-left: 18px; font-size: .8rem; color: var(--muted); display: grid; gap: 6px; }
+.pay-total { margin: 0; font-weight: 700; color: var(--head); }
+.pay-total.bad { color: var(--danger); }
+.pay-detail .form-grid .full-span { grid-column: 1 / -1; }
+.pay-info-box { margin: 10px 0 18px; border-top: 1px solid var(--line); padding-top: 12px; }
+.pay-info-box h4 { margin: 0 0 8px; font-family: var(--serif); color: var(--head); }
+.pay-info-box details { border-bottom: 1px solid var(--line); padding: 8px 0; font-size: .82rem; }
+.pay-info-box summary { cursor: pointer; font-weight: 600; color: var(--head); }
+.pay-info-box details p { margin: 8px 0 2px; color: var(--muted); }
+@media (min-width: 700px) { .pay-options { grid-template-columns: 1fr 1fr; } }
