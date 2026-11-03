@@ -138,6 +138,7 @@
       h("p", { class: "plan-meta", text: `${cap(s.frequency)} for ${s.term} months · ${money(s.perDelivery)} per delivery · ${money(s.total)} estimated total` }),
       h("p", { text: s.items.map(itemLine).join(" · ") }),
       h("p", { class: "plan-meta", text: `${s.customer.name} · ${addrOf(s)}` }),
+      s.payment && h("p", { class: "plan-meta", text: `Payment: ${s.payment.summary} · ${s.payment.status}` }),
       h("p", { class: "plan-meta", text: s.status === "cancelled" ? "Cancelled: no further deliveries." : s.status === "paused" ? `Paused. ${up.length} deliveries will be rescheduled when you resume.` : `Next delivery: ${up.length ? S.fmt(up[0]) : "none left"} · ${up.length} remaining` }),
       h("ul", { class: "sub-schedule", "aria-label": "Delivery schedule" }, s.schedule.slice(0, 8).map(d => h("li", { class: s.skipped.includes(d) ? "skipped" : "", text: `${S.fmt(d)}${s.skipped.includes(d) ? " (skipped)" : ""}` })), s.schedule.length > 8 && h("li", { text: `…and ${s.schedule.length - 8} more` })),
       edit.id === s.id ? editor(s) : h("div", { class: "sub-actions" }, btn("Skip next", "skip"), btn("Pause", "pause"), btn("Resume", "resume"), btn("Change products", "edit", () => startEdit(s)), btn("Cancel", "cancel", () => cancelSub(s))),
@@ -188,19 +189,19 @@
     }
     function paintOrders() {
       const list = orders();
-      ordersT.replaceChildren(...tbl(["Order", "Customer", "Items ordered", "Deliver to", "Plan", "Status", "Next delivery", "Per delivery"], list.map(s => [
+      ordersT.replaceChildren(...tbl(["Order", "Customer", "Items ordered", "Deliver to", "Plan", "Payment", "Status", "Next delivery", "Per delivery"], list.map(s => [
         h("div", {}, h("strong", { text: s.id }), h("small", { text: ` ${s.createdAt}` })),
         h("div", {}, h("div", { text: s.customer.name }), h("small", { text: `${s.customer.email} · ${s.customer.phone}` }), s.gift.isGift && h("small", { text: `Gift for ${s.gift.name}` })),
         s.items.map(i => h("div", { text: itemLine(i) })), addrOf(s),
-        `${cap(s.frequency)}, ${s.term} mo, from ${S.fmt(s.startDate)}`, h("span", { class: `pill ${s.status}`, text: cap(s.status) }),
+        `${cap(s.frequency)}, ${s.term} mo, from ${S.fmt(s.startDate)}`, s.payment ? h("div", {}, h("div", { text: s.payment.summary }), h("small", { text: s.payment.status })) : "—", h("span", { class: `pill ${s.status}`, text: cap(s.status) }),
         upcoming(s)[0] ? S.fmt(upcoming(s)[0]) : "—", money(s.perDelivery)])));
     }
     function paintDeliveries() {
       dRows = deliveries();
-      delivT.replaceChildren(...tbl(["Date", "Order", "Deliver to", "Items to pack", "Window", "Status"], dRows.map(({ s, d, st }) => [
+      delivT.replaceChildren(...tbl(["Date", "Order", "Deliver to", "Items to pack", "Window", "Cash to collect", "Status"], dRows.map(({ s, d, st }) => [
         S.fmt(d), s.id,
         h("div", {}, h("strong", { text: s.gift.isGift ? `${s.gift.name} (gift from ${s.customer.name})` : s.customer.name }), h("div", { text: addrOf(s) }), h("small", { text: `Phone ${s.customer.phone}${s.customer.notes ? ` · Note: ${s.customer.notes}` : ""}` })),
-        s.items.map(i => h("div", { text: itemLine(i) })), s.deliveryWindow,
+        s.items.map(i => h("div", { text: itemLine(i) })), s.deliveryWindow, s.payment && s.payment.method === "cod" ? money(s.perDelivery) : "Prepaid / none",
         h("select", { "aria-label": `Fulfilment status for ${s.id} on ${d}`, on: { change: e => { const list = S.loadSubs(), t = list.find(x => x.id === s.id); if (!t || !FULFIL.includes(e.target.value)) return; t.fulfilment = { ...(t.fulfilment || {}), [d]: e.target.value }; if (S.saveSubs(list)) { toast(`${s.id}: ${e.target.value}.`); paintMetrics(); } } } }, FULFIL.map(v => h("option", { value: v, text: cap(v), selected: v === st })))])));
     }
     function paintStock() {
@@ -233,8 +234,8 @@
       metrics = h("div", { class: "admin-metrics" });
       ordersT = h("table", { class: "compare-table" }); delivT = h("table", { class: "compare-table" }); stockT = h("table", { class: "compare-table" });
       const panes = {
-        orders: [h("div", { class: "filter-panel" }, field("Search orders", search), field("Status", status), h("button", { class: "button button-outline", type: "button", text: "Download orders CSV", on: { click: () => download("ember-leaf-orders.csv", [["Order", "Status", "Name", "Email", "Phone", "Address", "Items", "Frequency", "Term months", "Start", "Per delivery", "Estimated total"], ...orders().map(s => [s.id, s.status, s.customer.name, s.customer.email, s.customer.phone, addrOf(s), s.items.map(itemLine).join("; "), s.frequency, s.term, s.startDate, s.perDelivery, s.total])]) } })), scroller("Orders", ordersT)],
-        deliveries: [h("div", { class: "filter-panel" }, field("Show", range), h("button", { class: "button button-outline", type: "button", text: "Download packing list CSV", on: { click: () => download("ember-leaf-deliveries.csv", [["Date", "Order", "Deliver to", "Phone", "Address", "Items to pack", "Window", "Status"], ...dRows.map(({ s, d, st }) => [d, s.id, s.gift.isGift ? s.gift.name : s.customer.name, s.customer.phone, addrOf(s), s.items.map(itemLine).join("; "), s.deliveryWindow, st])]) } })), scroller("Deliveries", delivT)],
+        orders: [h("div", { class: "filter-panel" }, field("Search orders", search), field("Status", status), h("button", { class: "button button-outline", type: "button", text: "Download orders CSV", on: { click: () => download("ember-leaf-orders.csv", [["Order", "Status", "Name", "Email", "Phone", "Address", "Items", "Frequency", "Term months", "Start", "Per delivery", "Estimated total", "Payment method", "Payment status"], ...orders().map(s => [s.id, s.status, s.customer.name, s.customer.email, s.customer.phone, addrOf(s), s.items.map(itemLine).join("; "), s.frequency, s.term, s.startDate, s.perDelivery, s.total, s.payment ? s.payment.summary : "", s.payment ? s.payment.status : ""])]) } })), scroller("Orders", ordersT)],
+        deliveries: [h("div", { class: "filter-panel" }, field("Show", range), h("button", { class: "button button-outline", type: "button", text: "Download packing list CSV", on: { click: () => download("ember-leaf-deliveries.csv", [["Date", "Order", "Deliver to", "Phone", "Address", "Items to pack", "Window", "Status", "Cash to collect"], ...dRows.map(({ s, d, st }) => [d, s.id, s.gift.isGift ? s.gift.name : s.customer.name, s.customer.phone, addrOf(s), s.items.map(itemLine).join("; "), s.deliveryWindow, st, s.payment && s.payment.method === "cod" ? s.perDelivery : 0])]) } })), scroller("Deliveries", delivT)],
         stock: [h("p", { class: "notice", text: `Starting stock units are demo numbers (in stock 50, low 4, out 0) until you edit them. Status is automatic: 0 is out, ${LOW_STOCK_AT} or fewer is low. “Committed” counts packs needed for all remaining deliveries of active plans.` }), scroller("Stock and products", stockT),
           h("div", { class: "builder-actions" },
             h("button", { class: "button button-outline", type: "button", text: "Reset prices and stock", on: { click: async () => { if (await confirmDialog({ title: "Reset prices and stock?", text: "This restores the original demo catalogue. Orders are not affected.", ok: "Reset" }) === "ok") { store.remove("overrides"); A.refreshCatalogue(); paintStock(); paintMetrics(); toast("Catalogue reset to the demo defaults."); } } } }),
