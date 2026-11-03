@@ -479,7 +479,7 @@
       err.textContent = ok ? "" : "Enter a valid email address, like name@example.com.";
       if (!ok) return input.focus();
       input.value = "";
-      toast("Thanks. This is a demo, so nothing was stored or sent.");
+      toast("Thanks for signing up. No email is sent in this demo.");
     });
   }
 
